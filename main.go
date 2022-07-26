@@ -50,7 +50,7 @@ func main() {
 	// register http endpoints
 	httpRouter.Route("/v1/image", http.MethodPost, service.httpV1HandleUploadImage(session, awsS3Bucket))
 	httpRouter.Route("/v1/image/all", http.MethodGet, service.httpV1HandleListImageKeys(session, awsS3Region, awsS3Bucket))
-	httpRouter.Route("/v1/image/{id}", http.MethodGet, func(w http.ResponseWriter, r *http.Request) {})
+	httpRouter.Route("/v1/image/{id}", http.MethodGet, service.httpV1HandleGetImage(session, awsS3Region, awsS3Bucket))
 	httpRouter.Route("/v1/image/{id}", http.MethodPut, func(w http.ResponseWriter, r *http.Request) {})
 	httpRouter.Route("/v1/image/{id}", http.MethodDelete, func(w http.ResponseWriter, r *http.Request) {})
 	httpRouter.RouteNotFound(service.httpHandleNotFound())
