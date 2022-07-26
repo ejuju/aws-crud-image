@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/ejuju/crud-aws/internal/httputils"
 	"github.com/ejuju/crud-aws/internal/logutil"
 )
@@ -22,6 +24,23 @@ func main() {
 	// init router
 	httpRouter := httputils.NewGorillaRouter()
 
+	// connect to AWS
+	awsS3Region := os.Getenv("AWS_S3_REGION")
+	if awsS3Region == "" {
+		logger.Log(logutil.LogLevelPanic, "missing AWS_S3_REGION environment variable")
+		os.Exit(1)
+	}
+	awsS3Bucket := os.Getenv("AWS_S3_BUCKET")
+	if awsS3Bucket == "" {
+		logger.Log(logutil.LogLevelPanic, "missing AWS_S3_BUCKET environment variable")
+		os.Exit(1)
+	}
+	session, err := session.NewSession(&aws.Config{Region: aws.String(awsS3Region)})
+	if err != nil {
+		logger.Log(logutil.LogLevelPanic, err.Error())
+		os.Exit(1)
+	}
+
 	// init service
 	service := &Service{
 		HTTPRouter: httpRouter,
@@ -29,7 +48,7 @@ func main() {
 	}
 
 	// register http endpoints
-	httpRouter.Route("/v1/image", http.MethodPost, func(w http.ResponseWriter, r *http.Request) {})
+	httpRouter.Route("/v1/image", http.MethodPost, service.httpV1HandleUploadImage(session, awsS3Bucket))
 	httpRouter.Route("/v1/image/{id}", http.MethodGet, func(w http.ResponseWriter, r *http.Request) {})
 	httpRouter.Route("/v1/image/{id}", http.MethodPut, func(w http.ResponseWriter, r *http.Request) {})
 	httpRouter.Route("/v1/image/{id}", http.MethodDelete, func(w http.ResponseWriter, r *http.Request) {})
@@ -50,7 +69,7 @@ func main() {
 		MaxHeaderBytes:    8192,
 	}
 	logger.Log(logutil.LogLevelInfo, "starting HTTP server ("+httpServer.Addr+")")
-	err := httpServer.ListenAndServe()
+	err = httpServer.ListenAndServe()
 	if err != nil {
 		logger.Log(logutil.LogLevelPanic, err.Error())
 		os.Exit(1)
