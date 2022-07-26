@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
+// UploadFile uploads the provided file to an AWS bucket
 func UploadFile(session *session.Session, bucket, key string, file []byte) error {
 	fileSize := int64(len(file))
 

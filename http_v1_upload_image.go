@@ -20,10 +20,14 @@ func (s *Service) httpV1HandleUploadImage(awsSession *session.Session, bucket st
 		}
 
 		// upload to bucket
-		err = awsutil.UploadFile(awsSession, bucket, time.Now().String(), data)
+		key := time.Now().String()
+		err = awsutil.UploadFile(awsSession, bucket, key, data)
 		if err != nil {
 			httputils.RespondJSON(w, http.StatusInternalServerError, err.Error(), s.Logger)
 			return
 		}
+
+		// respond with upload object key
+		httputils.RespondJSON(w, http.StatusOK, key, s.Logger)
 	}
 }
