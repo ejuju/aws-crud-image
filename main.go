@@ -28,17 +28,17 @@ func main() {
 	awsS3Region := os.Getenv("AWS_S3_REGION")
 	if awsS3Region == "" {
 		logger.Log(logutil.LogLevelPanic, "missing AWS_S3_REGION environment variable")
-		os.Exit(1)
+		panic(err)
 	}
 	awsS3Bucket := os.Getenv("AWS_S3_BUCKET")
 	if awsS3Bucket == "" {
 		logger.Log(logutil.LogLevelPanic, "missing AWS_S3_BUCKET environment variable")
-		os.Exit(1)
+		panic(err)
 	}
 	session, err := session.NewSession(&aws.Config{Region: aws.String(awsS3Region)})
 	if err != nil {
 		logger.Log(logutil.LogLevelPanic, err.Error())
-		os.Exit(1)
+		panic(err)
 	}
 
 	// init service
@@ -73,6 +73,6 @@ func main() {
 	err = httpServer.ListenAndServe()
 	if err != nil {
 		logger.Log(logutil.LogLevelPanic, err.Error())
-		os.Exit(1)
+		panic(err)
 	}
 }
